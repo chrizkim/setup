@@ -20,7 +20,7 @@ brew update
 # Install Dropbox
 if ! brew ls --versions --cask dropbox &> /dev/null; then
   brew install --cask dropbox
-  open -a Dropbox
+  open -a /Applications/Dropbox.app
 fi
 echo 'Wait for Dropbox to fully sync and press RETURN to continue...'
 while IFS='' read -r -s -n 1 -d '' key; do
