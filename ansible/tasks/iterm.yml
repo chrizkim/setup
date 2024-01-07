@@ -1,0 +1,30 @@
+- name: Installing iTerm
+  homebrew_cask:
+    name: iterm2
+    state: latest
+  register: install_iterm_result
+
+- name: Prompting for iTerm System Permissions
+  shell: |
+    cat <<-'EOF' | osascript -
+      if {{ install_iterm_result.changed }}
+        display dialog "iTerm needs disk access (System Settings → Privacy & Security → Full Disk Access) and access to accessibility features (System Settings → Privacy & Security → Accessibility)" buttons {"Continue"} with title "Installing iTerm" with icon caution
+      end if
+    EOF
+  changed_when: install_iterm_result.changed
+
+- name: Configuring iTerm Preferences Folder
+  osx_defaults:
+    domain: com.googlecode.iterm2
+    key: PrefsCustomFolder
+    type: string
+    value: '{{ dropbox_restore_dir }}/Applications/iTerm'
+    state: present
+
+- name: Enabling iTerm Preferences Loading
+  osx_defaults:
+    domain: com.googlecode.iterm2
+    key: LoadPrefsFromCustomFolder
+    type: int
+    value: 1
+    state: present

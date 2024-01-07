@@ -1,0 +1,4 @@
+- name: Installing HTTPie
+  homebrew:
+    name: httpie
+    state: latest

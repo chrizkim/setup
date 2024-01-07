@@ -1,0 +1,21 @@
+- name: Installing TFSwitch
+  homebrew:
+    name: warrensbox/tap/tfswitch
+    state: latest
+
+# Gives TFSwitch a custom bin directory
+# https://github.com/warrensbox/terraform-switcher/issues/219
+- name: Creating tfswitch Directory
+  file:
+    path: ~/.tfswitch
+    state: directory
+
+- name: Configuring TFSwitch Binary Path
+  copy:
+    dest: ~/.tfswitch.toml
+    content: 'bin = "{{ ansible_user_dir }}/.tfswitch/terraform"'
+
+- name: Installing Terraform Language Server
+  homebrew:
+    name: hashicorp/tap/terraform-ls
+    state: latest

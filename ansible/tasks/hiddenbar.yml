@@ -1,0 +1,70 @@
+### Requires mas.yml task
+
+- name: Installing Hidden Bar
+  mas:
+    id: 1452453066
+    state: present
+  register: install_hiddenbar_result
+
+- name: Enabling Hidden Bar Always Hidden Section
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: alwaysHiddenSectionEnabled
+    type: bool
+    value: true
+    state: present
+
+- name: Hiding Hidden Bar Separators
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: areSeparatorsHidden
+    type: bool
+    value: true
+    state: present
+
+- name: Enabling Hidden Bar Auto Collapse
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: isAutoHide
+    type: bool
+    value: true
+    state: present
+
+- name: Autostarting Hidden Bar on Boot
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: isAutoStart
+    type: bool
+    value: true
+    state: present
+
+- name: Hiding Hidden Bar Preferences on Start
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: isShowPreferences
+    type: bool
+    value: false
+    state: present
+
+- name: Setting Hidden Bar Auto Collapse Time
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: numberOfSecondForAutoHide
+    type: float
+    value: 10
+    state: present
+
+- name: Disabling Hidden Bar Full Status Bar Expansion
+  osx_defaults:
+    domain: com.dwarvesv.minimalbar
+    key: useFullStatusBarOnExpandEnabled
+    type: bool
+    value: false
+    state: present
+
+- name: Starting Hidden Bar
+  shell: |
+    if {{ install_hiddenbar_result.changed }}; then
+      open -a "Hidden Bar"
+    fi
+  changed_when: install_hiddenbar_result.changed

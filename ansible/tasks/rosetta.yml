@@ -1,0 +1,11 @@
+- name: Installing Rosetta 2
+  shell: |
+    if [ "$(uname -m)" = "arm64" ]; then
+      softwareupdate --install-rosetta --agree-to-license
+    else
+      echo 'skipped'
+    fi
+  args:
+    creates: /Library/Apple/usr/share/rosetta
+  register: install_rosetta_result
+  changed_when: 'not install_rosetta_result.stdout.startswith("skipped")'

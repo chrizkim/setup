@@ -1,0 +1,23 @@
+- name: Installing rbenv
+  homebrew:
+    name:
+      - rbenv
+      - ruby-build
+    state: latest
+
+- name: Configuring Global ruby Binary
+  shell: |
+    set -e
+
+    existing="$(rbenv version-name || true)"
+    version="$(rbenv install --list | grep -E '^ *[0-9]+\.[0-9]+\.[0-9]+ *$' | tail -n1 | xargs)"
+    if [ "$existing" != "$version" ]; then
+      rbenv install --skip-existing "$version" >&2
+      rbenv global "$version" >&2
+
+      echo 'changed'
+    else
+      echo 'current'
+    fi
+  register: global_ruby_result
+  changed_when: 'global_ruby_result.stdout == "changed"'

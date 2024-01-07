@@ -1,0 +1,6 @@
+### Requires mas.yml task
+
+- name: Installing Slack
+  mas:
+    id: 803453959
+    state: present

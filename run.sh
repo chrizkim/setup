@@ -35,5 +35,5 @@ if ! type "ansible-playbook" &> /dev/null; then
 fi
 
 # Run
-cd "$DROPBOX_DIR/restore/ansible"
+cd "$DROPBOX_DIR/restore/setup/ansible"
 ansible-playbook playbook.yml

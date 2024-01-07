@@ -1,0 +1,592 @@
+### Requires mas.yml and rosetta.yml tasks
+
+- name: Installing Amphetamine
+  mas:
+    id: 937984704
+    state: present
+  register: install_amphetamine_result
+
+- name: Prompting for Amphetamine Accessibility Permissions
+  shell: |
+    cat <<-'EOF' | osascript -
+      if {{ install_amphetamine_result.changed }}
+        display dialog "To move the cursor, Amphetamine needs access to accessibility features (System Settings → Privacy & Security → Accessibility)" buttons {"Continue"} with title "Installing Amphetamine" with icon caution
+      end if
+    EOF
+  changed_when: install_amphetamine_result.changed
+
+- name: Adjusting Volume for Amphetamine Closed-Display Warnings
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Adjust Volume For CDM Warning
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Amphetamine Closed-Display Sleep
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Allow Closed-Display Sleep
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Display Sleep
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Allow Display Sleep
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Display Sleep During Screen Lock
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Allow Display Sleep When Screen Is Locked
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Screen Saver
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Allow Screen Saver
+    type: int
+    value: 0
+    state: present
+
+- name: Auto-removing Amphetamine Notifications
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Auto Remove Notifications
+    type: int
+    value: 1
+    state: present
+
+- name: Setting Amphetamine Default Session Duration
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Default Duration
+    type: int
+    value: 14
+    state: present
+
+- name: Enabling Amphetamine Closed-Display Mode Warning
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable CDM Warning
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Amphetamine Drive Alive
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Drive Alive
+    type: int
+    value: 0
+    state: present
+
+- name: Enabling Amphetamine Cursor Movement
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Mouse Movement
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Notification Sounds
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Notification Sound
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Session Auto End Notifications
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Session Auto End Notifications
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Session Auto Start Notifications
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Session Auto Start Notifications
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Session Extend Sound
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Session Extend Sound
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Amphetamine Session Notifications
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Session Notifications
+    type: int
+    value: 0
+    state: present
+
+- name: Enabling Amphetamine Session State Sound
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Session State Sound
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Statistics
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Statistics
+    type: int
+    value: 1
+    state: present
+
+- name: Enabling Amphetamine Triggers
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Enable Triggers
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Amphetamine Session End On Low Battery
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: End Session On Low Battery
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Session End On Forced Sleep
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: End Sessions On Forced Sleep
+    type: int
+    value: 0
+    state: present
+
+- name: Enabling Amphetamine Session End on Account Switch
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: End Sessions when FUS
+    type: int
+    value: 1
+    state: present
+
+- name: Hiding Amphetamine Dock Icon
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Hide Dock Icon
+    type: int
+    value: 1
+    state: present
+
+- name: Setting Amphetamine Icon Style
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Icon Style
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Lock Screen After Inactivity
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Lock Screen After Inactivity
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Lock Screen On Closed Display
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Lock Screen For CDM
+    type: int
+    value: 0
+    state: present
+
+- name: Maintaining Amphetamine Icon Opacity
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Lower Icon Opacity
+    type: int
+    value: 0
+    state: present
+
+- name: Setting Amphetamine Cursor Movement Initial Delay
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Mouse Movement Inactivity Delay
+    type: int
+    value: 300
+    state: present
+
+- name: Setting Amphetamine Cursor Movement Interval
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Mouse Movement Interval
+    type: int
+    value: 60
+    state: present
+
+- name: Setting Amphetamine Cursor Movement Speed
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Mouse Movement Smoothness
+    type: int
+    value: 1
+    state: present
+
+- name: Setting Amphetamine End Notification Sound
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Notification Sound End
+    type: int
+    value: 0
+    state: present
+
+- name: Setting Amphetamine Start Notification Sound
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Notification Sound Start
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Reduce Motion Mode
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Reduce Motion
+    type: int
+    value: 0
+    state: present
+
+- name: Allowing Amphetamine Repeating Closed-Display Mode Warnings
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Repeat CDM Warning
+    type: int
+    value: 1
+    state: present
+
+- name: Setting Amphetamine Repeat Interval For Closed-Display Mode Warnings
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Repeat Interval For CDM Warning
+    type: int
+    value: 300
+    state: present
+
+- name: Setting Amphetamine Session End Time Calcuation to Use Timer
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Session End Time Calcuation
+    type: int
+    value: 0
+    state: present
+
+- name: Showing Seconds in Amphetamine Session Remaining Time
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Show Seconds In Bar Time Remaining
+    type: int
+    value: 1
+    state: present
+
+- name: Showing Amphetamine Current Session Details
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Show Session Details In Menu
+    type: int
+    value: 1
+    state: present
+
+- name: Showing Amphetamine Session Remaining Time In Status Bar
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Show Session Time In Status Bar
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Amphetamine Welcome Window
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Show Welcome Window
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Session Start on Launch
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Start Session At Launch
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Session Start on Wake from Sleep
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Start Session On Wake
+    type: int
+    value: 0
+    state: present
+
+- name: Setting Amphetamine Status Bar Font Size to Small
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Status Bar Font Size
+    type: int
+    value: 1
+    state: present
+
+- name: Setting Amphetamine Status Bar Time Format to Standard
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Status Bar Session Time Format
+    type: int
+    value: 0
+    state: present
+
+- name: Setting Amphetamine Quick-Start to Right Click
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Status Item Click
+    type: int
+    value: 0
+    state: present
+
+- name: Disabling Amphetamine Cursor Movement Stopping
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Stop Mouse Movement
+    type: int
+    value: 0
+    state: present
+
+- name: Using Amphetamine 12-Hour Clock
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Use 24 Hour Clock
+    type: int
+    value: 0
+    state: present
+
+- name: Setting Volume for Amphetamine Closed-Display Warnings
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Volume Level For CDM Warning
+    type: int
+    value: 25
+    state: present
+
+- name: Reading Current Amphetamine Triggers
+  shell: echo $(defaults read com.if.Amphetamine "Trigger Data" 2>&1)
+  register: amphetamine_triggers_result
+  changed_when: no
+
+- name: Adding Triggers to Amphetamine
+  osx_defaults:
+    domain: com.if.Amphetamine
+    key: Trigger Data
+    type: array
+    value:
+      - <dict><key>AllowSysSleepOnClsdDisp</key><false/><key>App</key><string>Python</string><key>Enabled</key><true/><key>Name</key><string>Python</string><key>Screen Saver Delay</key><integer>5</integer><key>Screen Saver Exceptions</key><array/><key>TypeIDs</key><array><string>1</string></array></dict>
+      - <dict><key>AllowSysSleepOnClsdDisp</key><false/><key>App</key><string>terraform</string><key>Enabled</key><true/><key>Name</key><string>Terraform</string><key>Screen Saver Delay</key><integer>5</integer><key>Screen Saver Exceptions</key><array/><key>TypeIDs</key><array><string>1</string></array></dict>
+    state: present
+  changed_when: 'amphetamine_triggers_result.stdout != "( { AllowSysSleepOnClsdDisp = 0; App = Python; Enabled = 1; Name = Python; \"Screen Saver Delay\" = 5; \"Screen Saver Exceptions\" = ( ); TypeIDs = ( 1 ); }, { AllowSysSleepOnClsdDisp = 0; App = terraform; Enabled = 1; Name = Terraform; \"Screen Saver Delay\" = 5; \"Screen Saver Exceptions\" = ( ); TypeIDs = ( 1 ); } )"'
+
+- name: Autostarting Amphetamine on Boot
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "System Events"
+        if name of login items does not contain "Amphetamine" then
+          make login item at end with properties {path:"/Applications/Amphetamine.app", hidden:false}
+          return true
+        end if
+      end tell
+    EOF
+  register: autostart_amphetamine_result
+  changed_when: 'autostart_amphetamine_result.stdout == "true"'
+
+- name: Starting Amphetamine
+  shell: |
+    if {{ install_amphetamine_result.changed }}; then
+      open -a "Amphetamine"
+    fi
+  changed_when: install_amphetamine_result.changed
+
+- name: Installing Amphetamine Enhancer
+  shell: |
+    set -e
+
+    curl -fLo "Amphetamine Enhancer.dmg" https://github.com/x74353/Amphetamine-Enhancer/raw/master/Releases/Current/Amphetamine%20Enhancer.dmg
+    hdiutil attach "Amphetamine Enhancer.dmg"
+    cp -R "/Volumes/Amphetamine Enhancer/Amphetamine Enhancer.app" /Applications/
+    hdiutil detach "/Volumes/Amphetamine Enhancer"
+    rm -rf "Amphetamine Enhancer.dmg"
+  args:
+    chdir: ~/Downloads
+    creates: /Applications/Amphetamine Enhancer.app
+
+- name: Allowing Amphetamine Enhancer to Check for Updates
+  osx_defaults:
+    domain: com.if.Amphetamine-Enhancer
+    key: SUEnableAutomaticChecks
+    type: int
+    value: 1
+    state: present
+
+- name: Disabling Sending Amphetamine Enhancer Profile Info
+  osx_defaults:
+    domain: com.if.Amphetamine-Enhancer
+    key: SUSendProfileInfo
+    type: int
+    value: 0
+    state: present
+
+- name: Running Amphetamine Enhancer
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "System Events"
+        set amphetamineEnhancerWindows to {}
+        repeat while amphetamineEnhancerWindows does not contain "Amphetamine Enhancer"
+          try
+            do shell script "open -a '/Applications/Amphetamine Enhancer.app'"
+            set amphetamineEnhancerWindows to name of windows of application process "Amphetamine Enhancer"
+          end try
+          delay 0.1
+        end repeat
+
+        tell application process "Amphetamine Enhancer"
+          repeat with enhancement in rows of table 1 of scroll area 1 of window "Amphetamine Enhancer"
+            select enhancement
+            delay 0.1
+
+            if name of buttons of window "Amphetamine Enhancer" contains "Install" then
+              click button "Install" of window "Amphetamine Enhancer"
+              delay 0.1
+              click button "OK" of front sheet of front window
+            end if
+          end repeat
+        end tell
+      end tell
+
+      delay 0.5
+      tell application "Amphetamine Enhancer" to quit
+    EOF
+  args:
+    creates: ~/Library/LaunchAgents/amphetamine-enhancer-allProcesses.plist
+
+- name: Installing Amphetamine Power Protect
+  shell: |
+    set -e
+
+    if [ "$(uname -m)" = "arm64" ]; then
+      curl -fLo "Power Protect for Amphetamine.dmg" https://github.com/x74353/Amphetamine-Power-Protect/raw/main/DMG/Power%20Protect%20for%20Amphetamine.dmg
+      hdiutil attach "Power Protect for Amphetamine.dmg"
+      cp "/Volumes/Power Protect/Install Power Protect.pkg" ./
+      hdiutil detach "/Volumes/Power Protect"
+      rm -rf "Power Protect for Amphetamine.dmg"
+    else
+      echo 'skipped'
+    fi
+  args:
+    chdir: ~/Downloads
+    creates: ~/Library/Application Scripts/com.if.Amphetamine/powerProtect.scpt
+  register: install_powerprotect_result
+  changed_when: 'not install_powerprotect_result.stdout.startswith("skipped")'
+
+- name: Running Amphetamine Power Protect
+  shell: |
+    cat <<-'EOF' | osascript -
+      if {{ install_powerprotect_result.changed }}
+        set pkgPath to (POSIX path of (path to downloads folder as text)) & "Install Power Protect.pkg"
+        do shell script "open '" & pkgPath & "'"
+
+        tell application "System Events"
+          repeat while name of windows of application process "Installer" does not contain "Install Power Protect for Amphetamine"
+            delay 0.1
+          end repeat
+
+          tell window "Install Power Protect for Amphetamine" of application process "Installer"
+            try
+              click button "Allow" of front sheet
+              delay 1
+            end try
+
+            click button "Continue"
+            click button "Install"
+
+            repeat while name of buttons does not contain "Close"
+              delay 0.1
+            end repeat
+
+            click button "Close"
+            delay 0.1
+            click button "Move to Trash" of front sheet
+          end tell
+        end tell
+      end if
+    EOF
+  changed_when: install_powerprotect_result.changed
+
+- name: Installing Amphetamine Expanded Process Detection
+  shell: |
+    set -e
+
+    if [ "$(uname -m)" = "arm64" ]; then
+      curl -fLo "Amphetamine_Expanded_Process_Detection.zip" https://github.com/x74353/Amphetamine-Expanded-Process-Detection/raw/main/Script/Amphetamine_Expanded_Process_Detection.zip
+      unzip -od Amphetamine_Expanded_Process_Detection Amphetamine_Expanded_Process_Detection.zip
+      mv Amphetamine_Expanded_Process_Detection/processDiscovery.scpt "$HOME/Library/Application Scripts/com.if.Amphetamine/"
+      rm -rf "Amphetamine_Expanded_Process_Detection" "Amphetamine_Expanded_Process_Detection.zip"
+    else
+      echo 'skipped'
+    fi
+  args:
+    chdir: ~/Downloads
+    creates: ~/Library/Application Scripts/com.if.Amphetamine/processDiscovery.scpt
+  register: install_amphetamine_detection_result
+  changed_when: 'not install_amphetamine_detection_result.stdout.startswith("skipped")'
+
+- name: Restarting Amphetamine If Needed
+  shell: |
+    cat <<-'EOF' | osascript -
+      if {{ install_powerprotect_result.changed or install_amphetamine_detection_result.changed }} and application "Amphetamine" is running then
+        tell application "System Events"
+          tell menu bar item 1 of menu bar 2 of application process "Amphetamine"
+            click
+
+            repeat with element in (get entire contents)
+              try
+                if name of element is "Quit Amphetamine" then
+                  click element
+                  exit repeat
+                end if
+              end try
+            end repeat
+          end tell
+        end tell
+
+        repeat while application "Amphetamine" is running
+          delay 0.1
+        end repeat
+
+        tell application "Amphetamine" to activate
+
+        return true
+      end if
+    EOF
+  register: restart_amphetamine_result
+  changed_when: 'restart_amphetamine_result.stdout == "true"'

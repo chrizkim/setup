@@ -1,0 +1,4 @@
+- name: Installing Tree
+  homebrew:
+    name: tree
+    state: latest

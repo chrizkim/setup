@@ -1,0 +1,55 @@
+### Requires mas.yml task
+
+- name: Installing Magnet
+  mas:
+    id: 441258766
+    state: present
+  register: install_magnet_result
+
+- name: Autostarting Magnet on Boot
+  osx_defaults:
+    domain: com.crowdcafe.windowmagnet
+    key: launchAtLogin
+    type: bool
+    value: true
+    state: present
+
+- name: Setting Magnet Keyboard Shortcuts
+  shell: |
+    set -e
+
+    KEY_CODE="$(defaults read com.crowdcafe.windowmagnet '{{ item.key }}' | grep keyCode | tr -d ';' | cut -d'=' -f2 | xargs)"
+    MODIFIER_FLAGS="$(defaults read com.crowdcafe.windowmagnet '{{ item.key }}' | grep modifierFlags | tr -d ';' | cut -d'=' -f2 | xargs)"
+
+    if [ "$KEY_CODE" != '{{ item.key_code }}' ] || [ "$MODIFIER_FLAGS" != '{{ item.modifier_flags }}' ]; then
+      defaults write com.crowdcafe.windowmagnet '{{ item.key }}' '{ keyCode = {{ item.key_code }}; modifierFlags = {{ item.modifier_flags }}; }'
+      echo 'changed'
+    fi
+  loop:
+    - key: expandWindowEastComboKey
+      key_code: 124
+      modifier_flags: 1310720
+    - key: expandWindowNorthComboKey
+      key_code: 126
+      modifier_flags: 1441792
+    - key: expandWindowSouthComboKey
+      key_code: 125
+      modifier_flags: 1441792
+    - key: expandWindowWestComboKey
+      key_code: 123
+      modifier_flags: 1310720
+    - key: maximizeWindowComboKey
+      key_code: 126
+      modifier_flags: 1310720
+    - key: restoreWindowComboKey
+      key_code: 125
+      modifier_flags: 1310720
+  register: magnet_shortcut_result
+  changed_when: 'magnet_shortcut_result.stdout == "changed"'
+
+- name: Starting Magnet
+  shell: |
+    if {{ install_magnet_result.changed }}; then
+      open -a Magnet
+    fi
+  changed_when: install_magnet_result.changed

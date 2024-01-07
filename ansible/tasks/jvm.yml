@@ -1,0 +1,34 @@
+### Requires fish.yml task
+
+- name: Installing SDKMAN!
+  shell: curl -s "https://get.sdkman.io" | bash
+  args:
+    creates: ~/.sdkman
+
+- name: Updating SDKMAN!
+  shell: sdk selfupdate
+  args:
+    executable: fish
+  register: update_sdkman_result
+  changed_when: '"No update available" not in update_sdkman_result.stdout'
+
+- name: Installing Java
+  shell: sdk install java
+  args:
+    executable: fish
+  register: install_java_result
+  changed_when: '"is already installed" not in install_java_result.stdout'
+
+- name: Installing Scala
+  shell: sdk install scala
+  args:
+    executable: fish
+  register: install_scala_result
+  changed_when: '"is already installed" not in install_scala_result.stdout'
+
+- name: Installing sbt
+  shell: sdk install sbt
+  args:
+    executable: fish
+  register: install_sbt_result
+  changed_when: '"is already installed" not in install_sbt_result.stdout'

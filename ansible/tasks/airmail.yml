@@ -1,0 +1,6 @@
+### Requires mas.yml task
+
+- name: Installing Airmail
+  mas:
+    id: 918858936
+    state: present

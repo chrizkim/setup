@@ -1,0 +1,31 @@
+- name: Installing pipx
+  homebrew:
+    name: pipx
+    state: latest
+
+- name: Installing pyenv-virtualenv
+  homebrew:
+    name: pyenv-virtualenv
+    state: latest
+
+- name: Configuring Global python Binary
+  shell: |
+    set -e
+
+    existing="$(pyenv version-name || true)"
+    version="$(pyenv install --list | grep -E '^ *[0-9]+\.[0-9]+\.[0-9]+ *$' | tail -n1 | xargs)"
+    if [ "$existing" != "$version" ]; then
+      pyenv install --skip-existing "$version" >&2
+      pyenv global "$version" >&2
+
+      echo 'changed'
+    else
+      echo 'current'
+    fi
+  register: global_python_result
+  changed_when: 'global_python_result.stdout == "changed"'
+
+- name: Installing Pyright
+  homebrew:
+    name: pyright
+    state: latest

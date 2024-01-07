@@ -1,0 +1,93 @@
+- name: Installing Chrome
+  homebrew_cask:
+    name: google-chrome
+    state: latest
+
+- name: Booting Chrome for the First Time
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "Google Chrome" to activate
+      delay 1
+      tell application "System Events"
+        repeat while name of processes contains "Google Chrome"
+          try
+            tell application "Google Chrome" to quit
+          end try
+          delay 1
+        end repeat
+      end tell
+    EOF
+  args:
+    creates: ~/Library/Application Support/Google/Chrome/Default/Preferences
+
+- name: Disabling Chrome Sign-in
+  shell: |
+    set -e
+
+    prefs_file="$HOME/Library/Application Support/Google/Chrome/Default/Preferences"
+    allowed="$(cat "$prefs_file" | jq -r '.signin.allowed')"
+    allowed_on_next_startup="$(cat "$prefs_file" | jq -r '.signin.allowed_on_next_startup')"
+
+    if [ "$allowed" != "false" ] || [ "$allowed_on_next_startup" != "false" ]; then
+      sed -i '' -e 's/\"signin\":{[^}]*}/\"signin\":{\"allowed\":false,\"allowed_on_next_startup\":false}/g' "$prefs_file"
+      echo 'changed'
+    fi
+  register: chrome_signin_result
+  changed_when: 'chrome_signin_result.stdout == "changed"'
+
+- name: Disabling Chrome Password Autofill
+  shell: |
+    set -e
+
+    prefs_file="$HOME/Library/Application Support/Google/Chrome/Default/Preferences"
+    enabled="$(cat "$prefs_file" | jq -r '.credentials_enable_service')"
+
+    if [ "$enabled" != "false" ]; then
+      if [ "$enabled" = "true" ]; then
+        sed -i '' -e 's/\"credentials_enable_service\":true/\"credentials_enable_service\":false/g' "$prefs_file"
+      else
+        sed -i '' -e 's/}$/,\"credentials_enable_service\":false}/g' "$prefs_file"
+      fi
+
+      echo 'changed'
+    fi
+  register: chrome_password_result
+  changed_when: 'chrome_password_result.stdout == "changed"'
+
+- name: Disabling Chrome Payment Autofill
+  shell: |
+    set -e
+
+    prefs_file="$HOME/Library/Application Support/Google/Chrome/Default/Preferences"
+    enabled="$(cat "$prefs_file" | jq -r '.autofill.credit_card_enabled')"
+
+    if [ "$enabled" != "false" ]; then
+      if [ "$enabled" = "true" ]; then
+        sed -i '' -e 's/\"credit_card_enabled\":true/\"credit_card_enabled\":false/g' "$prefs_file"
+      else
+        sed -i '' -e 's/\"autofill\":{/\"autofill\":{\"credit_card_enabled\":false,/g' "$prefs_file"
+      fi
+
+      echo 'changed'
+    fi
+  register: chrome_payment_result
+  changed_when: 'chrome_payment_result.stdout == "changed"'
+
+- name: Disabling Chrome Address Autofill
+  shell: |
+    set -e
+
+    prefs_file="$HOME/Library/Application Support/Google/Chrome/Default/Preferences"
+    enabled="$(cat "$prefs_file" | jq -r '.autofill.profile_enabled')"
+
+    if [ "$enabled" != "false" ]; then
+      if [ "$enabled" = "true" ]; then
+        sed -i '' -e 's/\"profile_enabled\":true/\"profile_enabled\":false/g' "$prefs_file"
+      else
+        sed -i '' -e 's/\"autofill\":{/\"autofill\":{\"profile_enabled\":false,/g' "$prefs_file"
+      fi
+
+      echo 'changed'
+    fi
+  register: chrome_address_result
+  changed_when: 'chrome_address_result.stdout == "changed"'

@@ -1,0 +1,218 @@
+### Requires mas.yml task
+
+- name: Installing CopyClip 2
+  mas:
+    id: 1020812363
+    state: present
+  register: install_copyclip_result
+
+- name: Disabling Clearing CopyClip 2 Search on Hide
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: ClearSearchOnHide
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Hiding CopyClip 2 on Start
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: HideWindow
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Disabling Keeping CopyClip 2 Window in Front
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: KeepWindowOpen
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Setting CopyClip 2 Window Hot Key Code
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: HotKeyCode
+    type: int
+    value: 9
+    state: present
+
+- name: Setting CopyClip 2 Window Hot Key Modifiers
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: HotKeyModifierKey
+    type: int
+    value: 1179648
+    state: present
+
+- name: Setting CopyClip 2 Menu Hot Key Code
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: MenuHotKeyCode
+    type: int
+    value: 9
+    state: present
+
+- name: Setting CopyClip 2 Menu Hot Key Modifiers
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: MenuHotKeyModifierKey
+    type: int
+    value: 1703936
+    state: present
+
+- name: Enabling CopyClip 2 Direct Paste
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: PasteDirectly
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Setting CopyClip 2 to Paste Unformatted
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: PasteOriginalFormat
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Disabling CopyClip 2 Delete Warning Dialog
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: ShowDeleteWarning
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Removing CopyClip 2 from Dock
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: ShowDockIcon
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Setting CopyClip 2 Sort Ordering
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: SortByRecentlyUsed
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Disabling CopyClip 2 Fade Animations
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: WindowAnimationsEnabled
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ false if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 0 }}'
+    state: present
+
+- name: Enabling CopyClip 2 Paste on Single Click
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: pasteWithSingleClick
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Enabling CopyClip 2 History Recording
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: shouldRecordClips
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Setting CopyClip 2 History Size to Maximum
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: saveClippingsCount
+    type: int
+    value: 9999
+    state: present
+
+- name: Autostarting CopyClip 2 on Boot
+  osx_defaults:
+    domain: com.fiplab.copyclip2
+    key: startAtLogin
+    type: '{{ "bool" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: '{{ true if ansible_facts.distribution_version.split(".")[0]|int >= 13 else 1 }}'
+    state: present
+
+- name: Installing CopyClip 2 Helper
+  shell: |
+    set -e
+
+    curl -fLo CopyClip-2-Helper.zip https://fiplab.com/helpers/CopyClip-2-Helper.zip
+    rm -rf '/Applications/CopyClip 2 Helper.app'
+    unzip -od /Applications/ CopyClip-2-Helper.zip
+    rm -rf CopyClip-2-Helper.zip
+  args:
+    chdir: ~/Downloads
+    creates: /Applications/CopyClip 2 Helper.app
+
+- name: Running CopyClip 2 Helper
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "System Events"
+        set copyclipHelperWindows to {}
+        repeat while copyclipHelperWindows does not contain "CopyClip 2 Helper"
+          try
+            do shell script "open -a '/Applications/CopyClip 2 Helper.app'"
+            set copyclipHelperWindows to name of windows of application process "CopyClip 2 Helper"
+          end try
+          delay 0.1
+        end repeat
+
+        try
+          click button "Install" of window "CopyClip 2 Helper" of application process "CopyClip 2 Helper"
+          click button "OK" of front window of application process "CopyClip 2 Helper"
+          delay 1
+          click button "Okay" of front window of application process "CopyClip 2"
+
+          if name of front window of application process "CopyClip 2" is "CopyClip Window" then
+            key code 53
+          end if
+        end try
+      end tell
+
+      tell application "CopyClip 2 Helper" to quit
+    EOF
+  args:
+    creates: ~/Library/Application Scripts/com.fiplab.copyclip2/CopyClip Helper.scpt
+
+- name: Starting CopyClip 2
+  shell: |
+    if {{ install_copyclip_result.changed }}; then
+      open -a "CopyClip 2"
+    fi
+  changed_when: install_copyclip_result.changed
+
+- name: Adding 1Password to CopyClip 2 Exceptions
+  shell: |
+    set -e
+
+    COUNT="$(sqlite3 copyclip.sqlite "SELECT COUNT(*) FROM ZSOURCEAPP WHERE ZNAME='1Password' AND ZISBLACKLISTED=1")"
+    if [ $COUNT -eq 0 ]; then
+      EXISTING="$(sqlite3 copyclip.sqlite "SELECT Z_PK FROM ZSOURCEAPP WHERE ZNAME='1Password'")"
+
+      if [ -z "$EXISTING" ]; then
+        sqlite3 copyclip.sqlite <<-'    EOF'
+          BEGIN TRANSACTION;
+          INSERT INTO ZSOURCEAPP (Z_ENT, Z_OPT, ZISBLACKLISTED, ZBUNDLE, ZNAME) VALUES (2, 1, 1, 'com.1password.1password', '1Password');
+          UPDATE Z_PRIMARYKEY SET Z_MAX = (Z_MAX + 1) WHERE Z_NAME='SourceApp';
+          COMMIT;
+        EOF
+      else
+        sqlite3 copyclip.sqlite "UPDATE ZSOURCEAPP SET ZISBLACKLISTED=1 WHERE Z_PK=$EXISTING"
+      fi
+
+      echo 'changed'
+    fi
+  args:
+    chdir: ~/Library/Containers/com.fiplab.copyclip2/Data/Library/Application Support/CopyClip
+  register: copyclip_exceptions_result
+  changed_when: 'copyclip_exceptions_result.stdout == "changed"'

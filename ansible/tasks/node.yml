@@ -1,0 +1,28 @@
+- name: Installing nodenv
+  homebrew:
+    name:
+      - nodenv
+    state: latest
+
+- name: Configuring Global node Binary
+  shell: |
+    set -e
+
+    existing="$(nodenv version-name || true)"
+    version="$(nodenv install --list | grep -E '^ *[0-9]+\.[0-9]+\.[0-9]+ *$' | tail -n1 | xargs)"
+    if [ "$existing" != "$version" ]; then
+      nodenv install --skip-existing "$version" >&2
+      nodenv global "$version" >&2
+
+      echo 'changed'
+    else
+      echo 'current'
+    fi
+  register: global_node_result
+  changed_when: 'global_node_result.stdout == "changed"'
+
+- name:  Installing Yarn
+  npm:
+    name: yarn
+    global: yes
+    executable: ~/.nodenv/shims/npm

@@ -1,0 +1,68 @@
+### Requires rosetta.yml task
+
+- name: Installing Docker Desktop
+  homebrew_cask:
+    name: docker
+    state: latest
+  register: install_docker_result
+
+- name: Starting Docker Desktop
+  shell: |
+    if {{ install_docker_result.changed }}; then
+      open -a Docker
+
+      while [ ! -f "$HOME/Library/Group Containers/group.com.docker/settings.json" ]; do
+        sleep 1
+      done
+    fi
+  changed_when: install_docker_result.changed
+
+- name: Autostarting Docker Desktop on Boot
+  lineinfile:
+    path: ~/Library/Group Containers/group.com.docker/settings.json
+    regexp: '^(\s*)"autoStart":'
+    line: '\1"autoStart": true,'
+    backrefs: yes
+    insertafter: '^{$'
+    state: present
+
+- name: Hiding Docker Desktop on Start
+  lineinfile:
+    path: ~/Library/Group Containers/group.com.docker/settings.json
+    regexp: '^(\s*)"openUIOnStartupDisabled":'
+    line: '\1"openUIOnStartupDisabled": true,'
+    backrefs: yes
+    insertafter: '^{$'
+    state: present
+
+- name: Disabling Docker Desktop Usage Analytics
+  lineinfile:
+    path: ~/Library/Group Containers/group.com.docker/settings.json
+    regexp: '^(\s*)"analyticsEnabled":'
+    line: '\1"analyticsEnabled": false,'
+    backrefs: yes
+    insertafter: '^{$'
+    state: present
+
+- name: Hiding Docker Desktop Survey Notifications
+  lineinfile:
+    path: ~/Library/Group Containers/group.com.docker/settings.json
+    regexp: '^(\s*)"showSurveyNotifications":'
+    line: '\1"showSurveyNotifications": false,'
+    backrefs: yes
+    insertafter: '^{$'
+    state: present
+
+- name: Disabling Docker Desktop Integrity Check
+  lineinfile:
+    path: ~/Library/Group Containers/group.com.docker/settings.json
+    regexp: '^(\s*)"enableIntegrityCheck":'
+    line: '\1"enableIntegrityCheck": false,'
+    backrefs: yes
+    insertafter: '^{$'
+    state: present
+
+- name: Installing Helm
+  homebrew:
+    name: helm
+    state: latest

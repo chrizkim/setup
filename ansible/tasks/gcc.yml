@@ -1,0 +1,4 @@
+- name: Installing GCC
+  homebrew:
+    name: gcc
+    state: latest

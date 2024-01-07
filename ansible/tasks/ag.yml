@@ -1,0 +1,4 @@
+- name: Installing The Silver Searcher (Ag)
+  homebrew:
+    name: the_silver_searcher
+    state: latest

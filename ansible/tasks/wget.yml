@@ -1,0 +1,4 @@
+- name: Installing Wget
+  homebrew:
+    name: wget
+    state: latest

@@ -1,0 +1,77 @@
+### Requires homedir.yml, fish.yml, python.yml node.yml and go.yml tasks
+
+- name: Installing Neovim
+  homebrew:
+    name: neovim
+    state: latest
+
+- name: Syncing vimrc
+  file:
+    path: ~/.vimrc
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/vim/vimrc'
+    force: yes
+
+- name: Creating Neovim Config Directory
+  file:
+    path: ~/.config/nvim
+    state: directory
+
+- name: Creating Neovim Init File
+  copy:
+    dest: ~/.config/nvim/init.vim
+    content: |
+      set runtimepath^=~/.vim runtimepath+=~/.vim/after
+      let &packpath = &runtimepath
+      source ~/.vimrc
+    follow: no
+    force: yes
+
+- name: Configuring Neovim virtualenv
+  shell: |
+    set -e
+
+    eval "$(pyenv init -)" >&2
+    eval "$(pyenv virtualenv-init -)" >&2
+
+    pyenv install --skip-existing 3 >&2
+
+    if output="$(pyenv virtualenv 3 neovim 2>&1)"; then
+      echo 'created'
+    elif status=$? && echo "$output" | grep 'already exists' > /dev/null; then
+      echo 'exists'
+    else
+      echo "$output" >&2
+      exit $status
+    fi
+
+    pyenv activate neovim >&2
+
+    pyenv which python
+    pyenv which pip
+  register: neovim_virtualenv_result
+  changed_when: 'neovim_virtualenv_result.stdout_lines[0] == "created"'
+
+- name: Installing Pynvim (Python Client to Neovim)
+  pip:
+    name: pynvim
+    executable: '{{ neovim_virtualenv_result.stdout_lines[2] }}'
+    state: latest
+
+- name: Creating Vim Autoload Directory
+  file:
+    path: ~/.vim/autoload
+    state: directory
+
+- name: Installing vim-plug
+  get_url:
+    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    dest: ~/.vim/autoload/plug.vim
+
+- name: Installing Vim Plugins
+  shell: goenv init - | source; and nvim '+PlugInstall' '+set ma' '+silent 1,/^- Finishing/d' '+g/Already installed$/d' '+silent w! /dev/stderr' '+qa!'
+  args:
+    executable: fish
+  register: plug_install_result
+  changed_when: plug_install_result.stderr_lines | length > 0
+  failed_when: '(plug_install_result.stderr_lines | select("match", ".*Installing plugins") | length > 0) or (plug_install_result.stderr_lines | select("match", "^x ") | length > 0)'

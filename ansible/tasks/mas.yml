@@ -1,0 +1,4 @@
+- name: Installing mas-cli
+  homebrew:
+    name: mas
+    state: latest

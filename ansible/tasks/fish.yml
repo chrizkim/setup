@@ -1,0 +1,59 @@
+- name: Installing fish
+  homebrew:
+    name: fish
+    state: latest
+
+- name: Getting fish Path
+  shell: which fish
+  register: which_fish_result
+  changed_when: no
+
+- name: Adding fish to /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: '{{ which_fish_result.stdout }}'
+  become: yes
+
+- name: Changing Shell to fish
+  user:
+    name: '{{ ansible_user_id }}'
+    shell: '{{ which_fish_result.stdout }}'
+  become: yes
+
+- name: Creating fish Config Directory
+  file:
+    path: ~/.config/fish/functions
+    state: directory
+
+- name: Configuring fish
+  file:
+    path: ~/.config/fish/config.fish
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/fish/config.fish'
+    force: yes
+
+- name: Linking fish Functions
+  file:
+    path: '~/.config/fish/functions/{{ filepath | split("/") | last }}'
+    state: link
+    src: '{{ filepath }}'
+    force: yes
+  loop: '{{ query("fileglob", dropbox_restore_dir + "/dotfiles/fish/functions/*") | sort }}'
+  loop_control:
+    loop_var: filepath
+
+- name: Silencing Login Banner
+  copy:
+    dest: ~/.hushlogin
+    content: ''
+
+- name: Installing Fisher
+  homebrew:
+    name: fisher
+    state: latest
+
+- name: Installing Bass
+  shell: fisher install edc/bass
+  args:
+    creates: ~/.config/fish/functions/bass.fish
+    executable: '{{ which_fish_result.stdout }}'

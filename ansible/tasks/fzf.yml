@@ -1,0 +1,9 @@
+- name: Installing fzf
+  homebrew:
+    name: fzf
+    state: latest
+
+- name: Adding fzf Key Bindings
+  shell: $(brew --prefix)/opt/fzf/install
+  args:
+    creates: ~/.config/fish/functions/fzf_key_bindings.fish

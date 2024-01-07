@@ -1,0 +1,22 @@
+- name: Syncing SSH Directory
+  file:
+    path: ~/.ssh
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/ssh'
+    force: yes
+
+- name: Finding SSH Private Keys
+  find:
+    paths: ~/.ssh
+    patterns: id_rsa
+    file_type: file
+    recurse: yes
+  register: find_ssh_keys_result
+
+- name: Ensuring File Permissions for SSH Private Keys
+  file:
+    path: '{{ item.path }}'
+    mode: '0400'
+  loop: '{{ find_ssh_keys_result.files }}'
+  loop_control:
+    label: '{{ item.path }}'

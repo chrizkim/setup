@@ -1,0 +1,16 @@
+- name: Creating Projects Directory
+  file:
+    path: ~/Projects
+    state: directory
+
+- name: Creating Local bin Directory
+  file:
+    path: ~/.bin
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/bin'
+    force: yes
+
+- name: Creating XDG Base Directory
+  file:
+    path: ~/.config
+    state: directory

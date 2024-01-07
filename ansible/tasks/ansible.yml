@@ -1,0 +1,4 @@
+- name: Installing Ansible
+  homebrew:
+    name: ansible
+    state: latest

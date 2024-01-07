@@ -1,0 +1,262 @@
+### Requires jq.yml task
+
+- name: Installing Brave
+  homebrew_cask:
+    name: brave-browser
+    state: latest
+
+- name: Setting Brave as Default Browser
+  shell: |
+    cat <<-'EOF' | osascript -
+      on isBraveDefault()
+        return (do shell script "plutil -convert json -o - \"$HOME/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist\" | jq -r '.LSHandlers[] | select(.LSHandlerURLScheme == \"https\") | .LSHandlerRoleAll' || true") is "com.brave.browser"
+      end isBraveDefault
+
+      set changed to false
+
+      if not isBraveDefault() then
+        repeat while application "Brave Browser" is running
+          display dialog "Shut down Brave to continue" buttons {"Continue"} with title "Setting Brave as Default Browser" with icon caution
+        end repeat
+
+        do shell script "open -a 'Brave Browser' --args --make-default-browser"
+
+        repeat while not changed and not isBraveDefault()
+          try
+            tell application "System Events"
+              tell window 1 of process "CoreServicesUIAgent" to click (first button whose name starts with "Use")
+            end tell
+            set changed to true
+          end try
+          delay 0.1
+        end repeat
+      end if
+
+      return changed
+    EOF
+  register: brave_default_result
+  changed_when: 'brave_default_result.stdout == "true"'
+
+- name: Preparing Brave for Syncing
+  shell: |
+    cat <<-'EOF' | osascript -
+      global preferencesPath
+      set preferencesPath to (POSIX path of (path to application support folder from user domain as text)) & "BraveSoftware/Brave-Browser/Default/Preferences"
+
+      if not exists file preferencesPath of application "System Events" then
+        tell application "Brave Browser"
+          activate
+          delay 1
+          quit
+        end tell
+
+        tell application "System Events"
+          repeat while name of processes contains "Brave Browser"
+            delay 0.1
+          end repeat
+        end tell
+      end if
+
+      on getAllowJS()
+        return do shell script "cat '" & preferencesPath & "' | jq -r '.browser.allow_javascript_apple_events'"
+      end getAllowJS
+
+      set allowJS to getAllowJS()
+      if allowJS is "true" then
+        return "ready"
+      else if application "Brave Browser" is not running then
+        if allowJS is "false" then
+          do shell script "sed -i '' -e 's/\"allow_javascript_apple_events\":false/\"allow_javascript_apple_events\":true/g' '" & preferencesPath & "'"
+        else
+          do shell script "sed -i '' -e 's/\"browser\":{/\"browser\":{\"allow_javascript_apple_events\":true,/g' '" & preferencesPath & "'"
+        end if
+
+        tell application "Brave Browser"
+          activate
+          delay 1
+          quit
+        end tell
+
+        tell application "System Events"
+          repeat while name of processes contains "Brave Browser"
+            delay 0.1
+          end repeat
+        end tell
+
+        if getAllowJS() is "true" then
+          return "enabled"
+        else
+          return "Brave already synced and not allowing JavaScript"
+        end if
+      else
+        return "Brave running and not allowing JavaScript"
+      end if
+    EOF
+  register: brave_javascript_result
+  changed_when: 'brave_javascript_result.stdout == "enabled"'
+  failed_when: '"not allowing JavaScript" in brave_javascript_result.stdout'
+  ignore_errors: yes
+
+- name: Configuring Brave Sync
+  shell: |
+    cat <<-'EOF' | osascript -
+      set currentApp to path to frontmost application as text
+      set leaveOpen to application "Brave Browser" is running
+      set changed to false
+
+      tell application "Brave Browser"
+        set wordUrl to "https://alexeybarabash.github.io/25th-brave-sync-word/"
+        set syncUrl to "brave://settings/braveSync/setup"
+
+        activate
+        delay 1
+
+        make new window
+        open location wordUrl
+
+        set lastWord to missing value
+        repeat while lastWord is missing value
+          delay 0.1
+          set lastWord to execute active tab of front window javascript "document.querySelector('div.the25thWordField').textContent"
+        end repeat
+
+        set code to (do shell script "cat {{ dropbox_restore_dir }}/Applications/Brave/sync_code.txt") & " " & lastWord
+        close active tab of front window
+        delay 1
+
+        make new window
+        open location syncUrl
+        delay 1
+
+        if (execute active tab of front window javascript "
+          setup = document.querySelector('settings-ui').shadowRoot.querySelector('settings-main#main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-brave-sync-page').shadowRoot.querySelector('settings-brave-sync-subpage').shadowRoot.querySelector('settings-brave-sync-setup');
+
+          if (setup) {
+            setup.shadowRoot.querySelectorAll('cr-button').forEach( button => {
+              if (button.textContent.includes('I have a Sync Code')) {
+                button.click();
+              }
+            });
+
+            setTimeout(() => {
+              dialog = setup.shadowRoot.querySelector('settings-brave-sync-code-dialog');
+              textarea = dialog.shadowRoot.querySelector('textarea.sync-code-text');
+              textarea.value = '" & code & "';
+              textarea.dispatchEvent(new Event('input'));
+              dialog.shadowRoot.querySelector('cr-button.action-button').click();
+            });
+
+            true;
+          } else {
+            false;
+          }
+        ") then
+          tell application "System Events"
+            repeat while not (exists window "brave://settings says" of process "Brave Browser")
+              delay 0.1
+            end repeat
+
+            set current to group "brave://settings says" of window "brave://settings says" of process "Brave Browser"
+            set okButton to missing value
+            repeat while okButton is missing value
+              try
+                set okButton to (first button whose description starts with "OK") of current
+              on error
+                set current to group 1 of current
+              end try
+            end repeat
+
+            repeat while exists window "brave://settings says" of process "Brave Browser"
+              delay 0.5
+              click okButton
+            end repeat
+          end tell
+
+          set changed to true
+          close active tab of front window
+          delay 1
+
+          make new window
+          open location syncUrl
+          delay 1
+        end if
+
+        tell active tab of front window
+          execute javascript "
+            configure = document.querySelector('settings-ui').shadowRoot.querySelector('settings-main#main').shadowRoot.querySelector('settings-basic-page').shadowRoot.querySelector('settings-brave-sync-page').shadowRoot.querySelector('settings-brave-sync-subpage').shadowRoot.querySelector('settings-brave-sync-configure');
+
+            configure.shadowRoot.querySelectorAll('cr-button').forEach( button => {
+              if (button.textContent.includes('View Sync Code')) {
+                button.click();
+              }
+            });
+          "
+
+          if (execute javascript "
+            dialog = configure.shadowRoot.querySelector('settings-brave-sync-code-dialog');
+            textarea = dialog.shadowRoot.querySelector('textarea.sync-code-text');
+            dialog.shadowRoot.querySelector('cr-button.action-button').click();
+            textarea.value;
+          ") is not code then
+            error "Brave is already configured with a different sync code"
+          end if
+
+          if (execute javascript "
+            changed = false;
+
+            controls = configure.shadowRoot.querySelector('settings-sync-controls');
+
+            customizeSyncButton = controls.shadowRoot.querySelector('cr-radio-button[name=customize-sync]');
+
+            if (customizeSyncButton.getAttribute('checked') == null) {
+              customizeSyncButton.click();
+              changed = true;
+            }
+
+            Object.entries({
+              appCheckboxLabel: true,
+              bookmarksCheckboxLabel: true,
+              extensionsCheckboxLabel: true,
+              historyCheckboxLabel: false,
+              settingsCheckboxLabel: true,
+              themeCheckboxLabel: true,
+              readingListCheckboxLabel: true,
+              openTabsCheckboxLabel: false,
+              passwordsCheckboxLabel: false,
+              autofillCheckboxLabel: false,
+            }).forEach(([label, enable]) => {
+              button = controls.shadowRoot.querySelector(`cr-toggle[aria-labelledby=${label}]`);
+              checked = button.getAttribute('checked') != null;
+
+              if (enable != checked) {
+                button.click();
+                changed = true;
+              }
+            });
+
+            changed;
+          ") then
+            set changed to true
+          end if
+
+          close
+        end tell
+
+        if not leaveOpen then
+          delay 1
+          quit
+
+          tell application "System Events"
+            repeat while name of processes contains "Brave Browser"
+              delay 0.1
+            end repeat
+          end tell
+        end if
+      end tell
+
+      activate application currentApp
+      return changed
+    EOF
+  register: brave_sync_result
+  when: 'not brave_javascript_result.failed'
+  changed_when: 'brave_sync_result.stdout == "true"'

@@ -1,0 +1,11 @@
+- name: Installing AWS CLI
+  homebrew:
+    name: awscli
+    state: latest
+
+- name: Configuring AWS CLI
+  file:
+    path: ~/.aws
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/aws'
+    force: yes

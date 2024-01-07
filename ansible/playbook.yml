@@ -1,0 +1,70 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  vars:
+    task_groups:
+      - homebrew
+      - ansible
+      - homedir
+      - fish
+      - ssh
+      - git
+      - gcc
+      - wget
+      - tree
+      - ag
+      - jq
+      - yq
+      - fzf
+      - ngrok
+      - httpie
+      - go
+      - ruby
+      - node
+      - python
+      - jvm
+      - vim
+      - aws
+      - terraform
+      - rosetta
+      - dropbox
+      - iterm
+      - brave
+      - chrome
+      - 1password
+      - docker
+      - idrive
+      - mas
+      - magnet
+      - copyclip
+      - amphetamine
+      - hiddenbar
+      - airmail
+      - slack
+      - macos
+    dropbox_restore_dir: '{{ ansible_user_dir }}/Dropbox/restore'
+    needs_logout: no
+
+  tasks:
+    - name: Assembling Playbook
+      vars:
+        include_task_groups: '{{ task_groups if task_groups else [] }}'
+        skip_task_groups: '{{ query("fileglob", "tasks/*.yml") | map("regex_replace", "^(?:.*/)?tasks/([^/]*).yml$", "\1") | difference(include_task_groups) | sort }}'
+      include_tasks: 'tasks/{{ task_group }}.yml'
+      when: task_group in include_task_groups
+      loop: '{{ skip_task_groups + include_task_groups }}'
+      loop_control:
+        loop_var: task_group
+
+    - name: Logging Out If Needed
+      shell: |
+        if {{ needs_logout }}; then
+          osascript -e 'tell application "System Events" to keystroke "q" using {shift down, command down}'
+        fi
+      changed_when: needs_logout
+
+    - name: Complete
+      debug:
+        msg: '{{ "Some changes require relogging in to complete" if needs_logout else "Done!" }}'
+      register: complete_msg_result
+      changed_when: 'complete_msg_result.msg != "Done!"'

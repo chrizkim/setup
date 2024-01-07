@@ -1,0 +1,132 @@
+### Dock
+
+- name: Removing All Items from the Dock
+  osx_defaults:
+    domain: com.apple.dock
+    key: persistent-apps
+    type: array
+    value: []
+    state: present
+  register: clear_dock_result
+
+- name: Removing Recent Applications from the Dock
+  osx_defaults:
+    domain: com.apple.dock
+    key: show-recents
+    type: bool
+    value: false
+    state: present
+  register: remove_recents_result
+
+- name: Clearing List of Recent Applications
+  osx_defaults:
+    domain: com.apple.dock
+    key: recent-apps
+    type: array
+    value: []
+    state: present
+
+- name: Setting Dock to Automatically Show/Hide
+  osx_defaults:
+    domain: com.apple.dock
+    key: autohide
+    type: bool
+    value: true
+    state: present
+  register: autohide_dock_result
+
+- name: Resetting Dock
+  shell: >-
+    if {{
+      clear_dock_result.changed or
+      remove_recents_result.changed or
+      autohide_dock_result.changed
+    }}; then echo 'resetting' && killall Dock; fi
+  register: reset_dock_result
+  changed_when: 'reset_dock_result.stdout == "resetting"'
+
+
+### Keyboard
+
+- name: Getting Internal Keyboard ID
+  shell: |
+    set -e
+
+    if [ '{{ ansible_facts.distribution_version.split(".")[0]|int }}' -ge 14 ]; then
+      keyboard_id="0-0-0"
+    else
+      props="$(ioreg -n AppleDeviceManagementHIDEventService | grep -e '"Product"' -e '"VendorID"' -e '"ProductID"')"
+
+      let first=1
+      let last=3
+      while true; do
+        each="$(echo "$props" | sed -n "${first},${last}p")"
+
+        if echo "$each" | grep '"Product"' | grep 'Apple Internal Keyboard' > /dev/null 2>&1; then
+          vendor_id="$(echo "$each" | grep '"VendorID"' | cut -d'=' -f2 | xargs)"
+          product_id="$(echo "$each" | grep '"ProductID"' | cut -d'=' -f2 | xargs)"
+          keyboard_id="$vendor_id-$product_id-0"
+          break
+        else
+          let first+=3
+          let last+=3
+        fi
+      done
+    fi
+
+    echo "$keyboard_id"
+    echo $(defaults -currentHost read -g "com.apple.keyboard.modifiermapping.$keyboard_id" 2>&1)
+  register: keyboard_id_result
+  changed_when: no
+
+- name: Setting Caps Lock to Control
+  osx_defaults:
+    host: currentHost
+    domain: NSGlobalDomain
+    key: 'com.apple.keyboard.modifiermapping.{{ keyboard_id_result.stdout_lines[0] }}'
+    type: array
+    value:
+      - <dict><key>HIDKeyboardModifierMappingDst</key><integer>30064771300</integer><key>HIDKeyboardModifierMappingSrc</key><integer>30064771129</integer></dict>
+    state: present
+  register: remap_capslock_result
+  changed_when: 'keyboard_id_result.stdout_lines[1] != "( { HIDKeyboardModifierMappingDst = 30064771300; HIDKeyboardModifierMappingSrc = 30064771129; } )"'
+
+- name: Setting Keyboard Repeat Rate
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: KeyRepeat
+    type: '{{ "float" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: 2
+  register: repeat_rate_result
+
+- name: Setting Initial Delay Until Keyboard Repeat
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: InitialKeyRepeat
+    type: '{{ "float" if ansible_facts.distribution_version.split(".")[0]|int >= 13 else "int" }}'
+    value: 25
+  register: repeat_delay_result
+
+
+### Trackpad
+
+- name: Setting Trackpad Speed
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.trackpad.scaling
+    type: float
+    value: 2
+  register: trackpad_speed_result
+
+
+### Logout Flag
+
+- name: Setting Logout Flag
+  set_fact:
+    needs_logout: >-
+      {{
+        remap_capslock_result.changed or
+        repeat_rate_result.changed or
+        repeat_delay_result.changed or
+        trackpad_speed_result.changed
+      }}

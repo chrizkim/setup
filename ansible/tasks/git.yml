@@ -1,0 +1,47 @@
+- name: Installing Git
+  homebrew:
+    name: git
+    state: latest
+
+- name: Setting Global Git Config
+  file:
+    path: ~/.gitconfig
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/git/config'
+    force: yes
+
+- name: Setting Global gitignore File
+  file:
+    path: ~/.gitignore
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/git/ignore'
+    force: yes
+
+- name: Creating Local git Directory
+  file:
+    path: ~/.git
+    state: directory
+  register: home_git_dir
+
+- name: Initializing Restore Directory Git Repositories
+  shell: |
+    set -e
+
+    GIT_DIR="$(echo '{{ repo }}' | cut -d':' -f2)"
+    mkdir -p "{{ home_git_dir.path }}/$(dirname "$GIT_DIR")"
+
+    WORKING_DIR="$(mktemp -d)"
+    pushd "$WORKING_DIR"
+    git clone --no-checkout --separate-git-dir "{{ home_git_dir.path }}/$GIT_DIR" '{{ repo }}'
+    popd
+    rm -rf "$WORKING_DIR"
+
+    cd "{{ dropbox_restore_dir }}/$(basename "${GIT_DIR%.git}")"
+    git reset .
+  args:
+    creates: '{{ home_git_dir.path }}/{{ repo | split(":") | last }}'
+  loop:
+    - git@github.com:chrizkim/dotfiles.git
+    - git@github.com:chrizkim/setup.git
+  loop_control:
+    loop_var: repo
