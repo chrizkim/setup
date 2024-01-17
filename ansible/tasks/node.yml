@@ -1,7 +1,6 @@
 - name: Installing nodenv
   homebrew:
-    name:
-      - nodenv
+    name: nodenv
     state: latest
 
 - name: Configuring Global node Binary
@@ -26,3 +25,15 @@
     name: yarn
     global: yes
     executable: ~/.nodenv/shims/npm
+
+- name: Installing TypeScript
+  homebrew:
+    name:
+      - typescript
+      - typescript-language-server
+    state: latest
+
+- name: Installing Deno
+  homebrew:
+    name: deno
+    state: latest
