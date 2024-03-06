@@ -75,3 +75,8 @@
   register: plug_install_result
   changed_when: plug_install_result.stderr_lines | length > 0
   failed_when: '(plug_install_result.stderr_lines | select("match", ".*Installing plugins") | length > 0) or (plug_install_result.stderr_lines | select("match", "^x ") | length > 0)'
+
+- name: Installing Vim Launcher
+  shell: cp -R '{{ dropbox_restore_dir }}/Applications/Vim/Vim.app' /Applications
+  args:
+    creates: /Applications/Vim.app
