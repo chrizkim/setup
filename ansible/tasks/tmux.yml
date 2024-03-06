@@ -1,0 +1,11 @@
+- name: Installing tmux
+  homebrew:
+    name: tmux
+    state: latest
+
+- name: Setting tmux Config
+  file:
+    path: ~/.tmux.conf
+    state: link
+    src: '{{ dropbox_restore_dir }}/dotfiles/tmux/tmux.conf'
+    force: yes
