@@ -1,3 +1,42 @@
+### Network
+
+- name: Configuring DNS Servers
+  shell: |
+    set -e
+
+    if [ "$(networksetup -getdnsservers Wi-Fi | xargs)" != '1.1.1.1 8.8.8.8' ]; then
+      networksetup -setdnsservers Wi-Fi 1.1.1.1 8.8.8.8
+      echo 'changed'
+    fi
+  register: configure_dns_result
+  changed_when: 'configure_dns_result.stdout == "changed"'
+
+- name: Configuring Firewall
+  shell: |
+    set -e
+
+    BEFORE="$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate --getblockall --getallowsigned --getstealthmode --getloggingmode --getloggingopt)"
+
+    /usr/libexec/ApplicationFirewall/socketfilterfw \
+      --setglobalstate on \
+      --setblockall off \
+      --setallowsigned on \
+      --setallowsignedapp on \
+      --setstealthmode on \
+      --setloggingmode on \
+      --setloggingopt throttled \
+      > /dev/null 2>&1
+
+    AFTER="$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate --getblockall --getallowsigned --getstealthmode --getloggingmode --getloggingopt)"
+
+    if [ "$BEFORE" != "$AFTER" ]; then
+      echo "changed"
+    fi
+  become: yes
+  register: configure_firewall_result
+  changed_when: 'configure_firewall_result.stdout == "changed"'
+
+
 ### Dock
 
 - name: Removing All Items from the Dock
@@ -44,6 +83,65 @@
     }}; then echo 'resetting' && killall Dock; fi
   register: reset_dock_result
   changed_when: 'reset_dock_result.stdout == "resetting"'
+
+
+### Menu Bar
+
+- name: Setting Date/Time Format
+  osx_defaults:
+    domain: com.apple.menuextra.clock
+    key: DateFormat
+    type: string
+    value: 'EEE MMM d  h:mm:ss a'
+    state: present
+
+- name: Showing Date on Menu Bar
+  osx_defaults:
+    domain: com.apple.menuextra.clock
+    key: ShowDate
+    type: int
+    value: 1
+    state: present
+
+- name: Displaying Clock Seconds on Menu Bar
+  osx_defaults:
+    domain: com.apple.menuextra.clock
+    key: ShowSeconds
+    type: bool
+    value: true
+    state: present
+
+
+### Mission Control
+
+- name: Disabling Automatic Spaces Rearranging
+  osx_defaults:
+    domain: com.apple.dock
+    key: mru-spaces
+    type: bool
+    value: false
+    state: present
+  register: rearrange_spaces_result
+
+- name: Disabling Switch to Open Application Space
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleSpacesSwitchOnActivate
+    type: bool
+    value: false
+    state: present
+  register: switch_spaces_result
+
+
+### Sound
+
+- name: Enabling Volume Change Feedback
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: com.apple.sound.beep.feedback
+    type: int
+    value: 1
+    state: present
 
 
 ### Keyboard
@@ -118,6 +216,15 @@
     value: 2
   register: trackpad_speed_result
 
+- name: Enabling App Exposé Swipe Gesture
+  osx_defaults:
+    domain: com.apple.dock
+    key: showAppExposeGestureEnabled
+    type: bool
+    value: true
+    state: present
+  register: app_expose_result
+
 
 ### Logout Flag
 
@@ -125,8 +232,11 @@
   set_fact:
     needs_logout: >-
       {{
+        rearrange_spaces_result.changed or
+        switch_spaces_result.changed or
         remap_capslock_result.changed or
         repeat_rate_result.changed or
         repeat_delay_result.changed or
-        trackpad_speed_result.changed
+        trackpad_speed_result.changed or
+        app_expose_result.changed
       }}
