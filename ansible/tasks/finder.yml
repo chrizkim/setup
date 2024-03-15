@@ -1,0 +1,80 @@
+- name: Adding Home Folder to Finder Sidebar Favorites
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "System Events"
+        set frontApplication to name of first application process whose frontmost is true
+      end tell
+
+      tell application "Finder"
+        make new Finder window to home
+        activate
+      end tell
+
+      tell application "System Events"
+        tell front window of application process "Finder"
+          set prevCount to -1
+          set lastCount to 0
+
+          repeat until lastCount is prevCount
+            set prevCount to lastCount
+            delay 0.1
+            set lastCount to count (get entire contents)
+          end repeat
+
+          keystroke "t" using {control down, command down}
+
+          set changed to not prevCount is (count (get entire contents))
+        end tell
+      end tell
+
+      tell application "Finder" to close front window
+      tell application frontApplication to activate
+
+      return changed
+    EOF
+  register: sidebar_homedir_result
+  changed_when: 'sidebar_homedir_result.stdout == "true"'
+
+- name: Showing All File Extensions in Finder
+  osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleShowAllExtensions
+    type: bool
+    value: true
+    state: present
+  register: finder_extensions_result
+
+- name: Expiring Trash Items After 30 Days
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXRemoveOldTrashItems
+    type: bool
+    value: true
+    state: present
+
+- name: Sorting Folders First in Finder
+  osx_defaults:
+    domain: com.apple.finder
+    key: _FXSortFoldersFirst
+    type: bool
+    value: true
+    state: present
+
+- name: Setting Default Search Scope to Current Folder
+  osx_defaults:
+    domain: com.apple.finder
+    key: FXDefaultSearchScope
+    type: string
+    value: 'SCcf'
+    state: present
+
+
+### Logout Flag
+
+- name: Setting Logout Flag
+  set_fact:
+    needs_logout: >-
+      {{
+        needs_logout or
+        finder_extensions_result.changed
+      }}

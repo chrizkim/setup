@@ -232,6 +232,7 @@
   set_fact:
     needs_logout: >-
       {{
+        needs_logout or
         rearrange_spaces_result.changed or
         switch_spaces_result.changed or
         remap_capslock_result.changed or

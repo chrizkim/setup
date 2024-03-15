@@ -42,6 +42,7 @@
       - hiddenbar
       - airmail
       - slack
+      - finder
       - macos
     dropbox_restore_dir: '{{ ansible_user_dir }}/Dropbox/restore'
     needs_logout: no
