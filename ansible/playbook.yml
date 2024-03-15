@@ -43,6 +43,7 @@
       - airmail
       - slack
       - finder
+      - messages
       - macos
     dropbox_restore_dir: '{{ ansible_user_dir }}/Dropbox/restore'
     needs_logout: no

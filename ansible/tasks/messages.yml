@@ -1,0 +1,47 @@
+- name: Enabling Messages in iCloud
+  shell: |
+    cat <<-'EOF' | osascript -
+      tell application "Messages"
+        activate
+
+        repeat until (count of windows) > 0
+          delay 0.1
+        end repeat
+      end tell
+
+      tell application "System Events"
+        tell application process "Messages"
+          keystroke "," using {command down}
+
+          repeat until role description of front window is "dialog"
+            delay 0.1
+          end repeat
+
+          repeat with element in (get entire contents of front window)
+            if class of element is button and name of element is "iMessage" then
+              click element
+              exit repeat
+            end if
+          end repeat
+
+          set changed to false
+
+          repeat with element in (get entire contents of front window)
+            if class of element is checkbox and name of element is "Enable Messages in iCloud" then
+              if value of element is 0 then
+                click element
+                set changed to true
+              end if
+
+              exit repeat
+            end if
+          end repeat
+        end tell
+      end tell
+
+      tell application "Messages" to quit
+
+      return changed
+    EOF
+  register: icloud_messages_result
+  changed_when: 'icloud_messages_result.stdout == "true"'
