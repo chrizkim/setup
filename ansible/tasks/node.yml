@@ -20,9 +20,15 @@
   register: global_node_result
   changed_when: 'global_node_result.stdout == "changed"'
 
-- name:  Installing Yarn
+- name: Installing Yarn
   npm:
     name: yarn
+    global: yes
+    executable: ~/.nodenv/shims/npm
+
+- name: Installing PNPM
+  npm:
+    name: pnpm
     global: yes
     executable: ~/.nodenv/shims/npm
 
