@@ -1,4 +1,9 @@
-- name: Installing HTTPie
-  homebrew:
+- name: Installing HTTPie CLI
+  shell: brew install --formula httpie && brew link httpie
+  register: install_httpie_cli_result
+  changed_when: '"is already installed and up-to-date" not in install_httpie_cli_result.stderr or "Already linked" not in install_httpie_cli_result.stderr'
+
+- name: Installing HTTPie Desktop
+  homebrew_cask:
     name: httpie
     state: latest
