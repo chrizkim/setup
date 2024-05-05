@@ -38,8 +38,3 @@
       - typescript
       - typescript-language-server
     state: latest
-
-- name: Installing Deno
-  homebrew:
-    name: deno
-    state: latest

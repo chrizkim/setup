@@ -1,4 +1,4 @@
-### Requires homedir.yml, fish.yml, python.yml node.yml and go.yml tasks
+### Requires homedir.yml, fish.yml, python.yml and go.yml tasks
 
 - name: Installing Neovim
   homebrew:
