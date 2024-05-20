@@ -15,7 +15,7 @@
 
 - name: Installing Patched Terminal Font
   copy:
-    src: '{{ dropbox_restore_dir }}/Fonts/MonacoPlusCodicons-Regular.ttf'
+    src: '{{ dropbox_restore_dir }}/Fonts/MonacoNerdFont-Regular.ttf
     dest: ~/Library/Fonts
 
 - name: Configuring iTerm Preferences Folder
