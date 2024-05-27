@@ -1,0 +1,4 @@
+- name: Installing bat
+  homebrew:
+    name: bat
+    state: latest

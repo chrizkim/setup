@@ -13,6 +13,7 @@
       - wget
       - tree
       - ag
+      - bat
       - jq
       - yq
       - fzf
