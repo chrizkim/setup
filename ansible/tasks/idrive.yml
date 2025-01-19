@@ -1,4 +1,0 @@
-- name: Installing iDrive
-  homebrew_cask:
-    name: idrive
-    state: latest
